@@ -12,4 +12,4 @@ function decodeBase64(hash) {
 module.exports = {
     encodeBase64,
     decodeBase64
-}
+};
