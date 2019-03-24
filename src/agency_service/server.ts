@@ -4,9 +4,6 @@ import { IOAuthService } from './services';
 import { OAuthRequestModel } from './services/oauth';
 
 class AgencyServer extends BaseServer {
-    /**
-     * Private Properties
-     */
     private _oauthService: IOAuthService;
 
     constructor(oauthService: IOAuthService) {
@@ -24,7 +21,7 @@ class AgencyServer extends BaseServer {
 
     async onOAuth(req: Request, res: Response, next: NextFunction) {
         try {
-            let request = this.doCast(req);
+            let request = this.doCast<any, OAuthRequestModel>(req);
             let response = await this._oauthService.doHandshake(request.data);
             this.doSend(res, 200, response);
         } catch (err) {
@@ -33,7 +30,7 @@ class AgencyServer extends BaseServer {
     }
 
     private doCast<T, K>(req: Request) {
-        return this.doParseRequest<any, OAuthRequestModel>(req);
+        return this.doParseRequest<T, K>(req);
     }
 }
 
