@@ -6,14 +6,14 @@ const EventEmitter = require("events");
 
 class HandShakeProtocol extends EventEmitter {
     constructor() {
-
+        super();
     }
 
     /**
      * Someone says "hello"
      * @param {*} params 
      */
-    onHelloReceived(params) {
+    onHelloReceived() {
 
     }
 }
