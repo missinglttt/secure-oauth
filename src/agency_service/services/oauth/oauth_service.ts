@@ -1,7 +1,11 @@
 import { OAuthRequestModel } from "./oauth.model";
 
+export class BaseResponse {
+    success: boolean = true;
+}
+
 export interface IOAuthService {
-    doHandshake(params: OAuthRequestModel): void;
+    doHandshake(params: OAuthRequestModel): Promise<BaseResponse>;
 }
 
 export class OAuthService implements IOAuthService {
@@ -9,7 +13,7 @@ export class OAuthService implements IOAuthService {
 
     }
 
-    doHandshake(params: OAuthRequestModel) {
-
+    async doHandshake(params: OAuthRequestModel) {
+        return new BaseResponse();
     }
 }

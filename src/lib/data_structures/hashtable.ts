@@ -20,6 +20,7 @@ export class HashTableBase<TValue> {
     }
 
     protected hasKey(key: string) {
-        return this._store.containsKey(key);
+        //@ts-ignore
+        return this._store.has(key);
     }
 }

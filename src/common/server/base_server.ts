@@ -1,25 +1,32 @@
-import { Router, RequestHandler, Request, Response, ErrorRequestHandler, application, Application } from 'express';
-import { json } from 'body-parser';
+import express from "express";
+import * as bodyParser from 'body-parser';
 import { EventEmitter } from 'events';
 import { NotFoundError, InternalServerError } from './error';
 import { INVALID_RESPONSE_CHANNEL } from './error_messages';
 import { HttpRequestModel } from '.';
 
 export class BaseServer extends EventEmitter {
-    protected _router: Router = Router();
-    protected _server: Application = application;
-    protected _debug: boolean = true;
+    protected _router: express.Router = express.Router();
+    protected _server: express.Express = express();
+    protected _debug: boolean = false;
 
-    constructor() {
+    constructor(debug: boolean = false) {
         super();
+        this._debug = debug;
         this.defaut();
     }
 
     private defaut() {
-        this._server.use(json());
+        this._server.use(bodyParser.json());
         this._server.use(this._router);
-        this._server.use(this.notFound);
-        this._server.use(this.internalServerError);
+        this._server.use(this.notFound.bind(this));
+
+        let context = this;
+        //@ts-ignore
+        this._server.use((err, req, res, next) => {
+            res.status(500).send(new InternalServerError(err.message, context._debug));
+            context.emit("500", req.url);
+        });
     }
 
     /**
@@ -27,19 +34,9 @@ export class BaseServer extends EventEmitter {
      * @param req 
      * @param res 
      */
-    private notFound(req: Request, res: Response) {
+    protected notFound(req: express.Request, res: express.Response) {
         res.status(404).send(new NotFoundError());
         this.emit("404", req.url);
-    }
-
-    /**
-     * Handle "500" by default
-     * @param req 
-     * @param res 
-     */
-    private internalServerError(error: Error, req: Request, res: Response) {
-        res.status(500).send(new InternalServerError(error.message, this._debug));
-        this.emit("500", req.url);
     }
 
     /**
@@ -49,14 +46,14 @@ export class BaseServer extends EventEmitter {
      */
     protected listen(port: number) {
         this._server.listen(port);
-        this.emit("startup", this._server);
+        this.emit("startup", port);
     }
 
     /**
      * Configure middleware for router
      * @param fn 
      */
-    middleware(fn: RequestHandler) {
+    middleware(fn: express.RequestHandler) {
         this._router.use(fn);
     }
 
@@ -65,7 +62,7 @@ export class BaseServer extends EventEmitter {
      * @param routePath 
      * @param fn 
      */
-    all(routePath: string, fn: RequestHandler) {
+    all(routePath: string, fn: express.RequestHandler) {
         this._router.use(routePath, fn);
     }
 
@@ -74,7 +71,7 @@ export class BaseServer extends EventEmitter {
      * @param routePath 
      * @param fn 
      */
-    post(routePath: string, fn: RequestHandler) {
+    post(routePath: string, fn: express.RequestHandler) {
         this._router.post(routePath, fn);
     }
 
@@ -83,7 +80,7 @@ export class BaseServer extends EventEmitter {
      * @param routePath 
      * @param fn 
      */
-    get(routePath: string, fn: RequestHandler) {
+    get(routePath: string, fn: express.RequestHandler) {
         this._router.get(routePath, fn);
     }
 
@@ -92,7 +89,7 @@ export class BaseServer extends EventEmitter {
      * @param routePath 
      * @param fn 
      */
-    put(routePath: string, fn: RequestHandler) {
+    put(routePath: string, fn: express.RequestHandler) {
         this._router.put(routePath, fn);
     }
 
@@ -109,7 +106,7 @@ export class BaseServer extends EventEmitter {
      * @type K: Type of request query (GET) or body (other methods)
      * @param req 
      */
-    protected doParseRequest<T, K>(req: Request) {
+    protected doParseRequest<T, K>(req: express.Request) {
         let raw = new HttpRequestModel<T, K>();
         raw.params = this.cast<T>(req.params);
         raw.data = this.cast<K>(req.method === "GET" ? req.query : req.body);
@@ -119,7 +116,7 @@ export class BaseServer extends EventEmitter {
     /**
      * Send response to cliend
      */
-    doSend<T>(res: Response, status: number, body: T) {
+    doSend<T>(res: express.Response, status: number, body: T) {
         if (!res) {
             throw new Error(INVALID_RESPONSE_CHANNEL);
         }

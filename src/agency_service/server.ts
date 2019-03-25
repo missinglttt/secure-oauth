@@ -2,13 +2,14 @@ import { BaseServer } from '../common/server';
 import { Request, Response, NextFunction } from 'express';
 import { IOAuthService } from './services';
 import { OAuthRequestModel } from './services/oauth';
+import { IDenpendencyProvider } from '../lib';
 
 export class AgencyServer extends BaseServer {
-    private _oauthService: IOAuthService;
+    private _dp: IDenpendencyProvider;
 
-    constructor(oauthService: IOAuthService) {
+    constructor(provider: IDenpendencyProvider) {
         super();
-        this._oauthService = oauthService;
+        this._dp = provider;
     }
 
     route() {
@@ -22,7 +23,8 @@ export class AgencyServer extends BaseServer {
     async onOAuth(req: Request, res: Response, next: NextFunction) {
         try {
             let request = this.doCast<any, OAuthRequestModel>(req);
-            let response = await this._oauthService.doHandshake(request.data);
+            let response = await this._dp.instanceOf<IOAuthService>("IOAuthService")
+                .doHandshake(request.data);
             this.doSend(res, 200, response);
         } catch (err) {
             next(err);

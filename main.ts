@@ -1,8 +1,11 @@
-//import { APP_CONFIG } from './config';
-//import { AgencyServer } from './src/agency_service/server';
-//import { IOAuthService, OAuthService } from './src/agency_service/services'
+import { APP_CONFIG } from './config';
+import { AgencyServer } from './src/agency_service/server';
+import { AgencyServiceProvider } from './src/agency_service/provider';
 
-//const SERVER = new AgencyServer(new OAuthService());
-//SERVER.run(APP_CONFIG.PORT);
+const SERVER = new AgencyServer(AgencyServiceProvider.createProvider());
+SERVER.route();
+SERVER.on("startup", (port) => {
+    console.log("server run on port " + port);
+});
 
-console.log("123")
+SERVER.run(APP_CONFIG.PORT);
