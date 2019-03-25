@@ -4,7 +4,7 @@ export interface IOAuthService {
     doHandshake(params: OAuthRequestModel): void;
 }
 
-class OAuthService implements IOAuthService {
+export class OAuthService implements IOAuthService {
     constructor() {
 
     }

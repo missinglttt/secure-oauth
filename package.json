@@ -2,9 +2,12 @@
   "name": "agency-node",
   "version": "1.0.0",
   "description": "",
-  "main": "main.js",
+  "main": "./dist/main.js",
   "scripts": {
-    "test": "tsc && mocha dist/**/*.spec.js"
+    "start": "npm run build && npm run serve",
+    "build": "tsc",
+    "serve": "node dist/main.js",
+    "test": "mocha --require ts-node/register test/**/*.test.ts"
   },
   "repository": {
     "type": "git",
@@ -20,24 +23,36 @@
     "body-parser": "^1.18.3",
     "ethers": "^4.0.27",
     "express": "^4.16.4",
+    "hashtable": "^2.0.2",
     "jsonwebtoken": "^8.4.0",
     "lodash": "^4.17.11",
+    "mkdirp": "^0.5.1",
     "mongoose": "^5.4.19",
     "morgan": "^1.9.1",
     "request": "^2.88.0",
     "uuid": "^3.3.2",
-    "winston": "^3.2.1"
+    "winston": "^3.2.1",
+    "winston-daily-rotate-file": "^3.8.0"
   },
   "devDependencies": {
+    "@types/chai": "^4.1.7",
     "@types/express": "^4.16.1",
+    "@types/hashtable": "^3.0.28",
     "@types/lodash": "^4.14.123",
+    "@types/mkdirp": "^0.5.2",
+    "@types/mocha": "^5.2.6",
     "@types/mongoose": "^5.3.23",
     "@types/morgan": "^1.7.35",
     "@types/request": "^2.48.1",
     "@types/sjcl": "^1.0.28",
     "@types/winston": "^2.4.4",
     "awesome-typescript-loader": "^5.2.1",
+    "chai": "^4.2.0",
+    "mocha": "^6.0.2",
+    "shelljs": "^0.8.3",
     "source-map-loader": "^0.2.4",
+    "ts-node": "^8.0.3",
+    "typescript": "^3.3.4000",
     "webpack": "^4.29.6"
   }
 }

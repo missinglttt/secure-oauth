@@ -1,3 +1,0 @@
-class BaseHttpError {
-    message: string;
-}

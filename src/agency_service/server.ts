@@ -3,7 +3,7 @@ import { Request, Response, NextFunction } from 'express';
 import { IOAuthService } from './services';
 import { OAuthRequestModel } from './services/oauth';
 
-class AgencyServer extends BaseServer {
+export class AgencyServer extends BaseServer {
     private _oauthService: IOAuthService;
 
     constructor(oauthService: IOAuthService) {
@@ -33,5 +33,3 @@ class AgencyServer extends BaseServer {
         return this.doParseRequest<T, K>(req);
     }
 }
-
-module.exports = AgencyServer;
