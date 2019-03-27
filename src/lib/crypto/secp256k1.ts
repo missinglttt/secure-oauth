@@ -1,11 +1,9 @@
-import { Wallet } from 'ethers';
-import { ec as EC } from 'elliptic';
+import { ec as EC, Signature, BasicSignature } from 'elliptic';
 import * as _ from 'lodash';
 import { randomBytes } from 'crypto';
 import { Hex } from '../types/hex';
 import { Keccak256 } from './keccak256';
-const sjcl = require("./sjcl");
-const ecc = require("./sjcl").ecc;
+import { encrypt, decrypt, ecc, codec, hash } from '../js/sjcl';
 
 const PRIVAKEY_LENGTH = 64;
 const PUBLICKEY_LENGTH = 67;
@@ -13,7 +11,7 @@ const ADDRESS_LENGTH = 40;
 
 export class Point extends Hex {
     protected readonly _curve: EC;
-    constructor(value: string | Uint8Array, length: number) {
+    constructor(value?: string | Uint8Array, length?: number) {
         super(value, length);
         this._curve = new EC('secp256k1');
     }
@@ -31,6 +29,20 @@ export class PrivateKey extends Point {
     getPublicKey(compressed: boolean = false): PublicKey {
         let pair = this._curve.keyFromPrivate(this._value);
         return new PublicKey(pair.getPublic(compressed, 'hex'));
+    }
+
+    sign(message: Hex) {
+        let pair = this._curve.keyFromPrivate(this._value);
+        return pair.sign(message.toByteArray(), {
+            canonical: true
+        })
+    }
+
+    unserialize() {
+        return new ecc.ecdsa.secretKey(
+            ecc.curves.k256,
+            ecc.curves.k256.field.fromBits(codec.hex.toBits(this._value))
+        );
     }
 }
 
@@ -80,12 +92,18 @@ export class PublicKey extends Point {
             if ((hashed[i >> 1] >> 4) >= 8) {
                 chars[i] = chars[i].toUpperCase();
             }
+
             if ((hashed[i >> 1] & 0x0f) >= 8) {
                 chars[i + 1] = chars[i + 1].toUpperCase();
             }
         }
 
         return '0x' + chars.join('');
+    }
+
+    public unserialize() {
+        return new ecc.ecdsa.publicKey(ecc.curves.k256,
+            codec.hex.toBits(this._value));
     }
 }
 
@@ -99,7 +117,86 @@ export class Address extends Point {
     }
 }
 
-export class KeyPair {
+export class ECSignature extends Point {
+    r: string;
+    s: string;
+    v: number;
+    recoveryParam: number;
+
+    constructor() {
+        super()
+    }
+
+    public fromSig(signature: Signature) {
+        this.recoveryParam = signature.recoveryParam;
+        this.r = new Hex('0x' + signature.r.toString(16)).hexZeroPad(32);
+        this.s = new Hex('0x' + signature.s.toString(16)).hexZeroPad(32);
+        this.v = 27 + signature.recoveryParam;
+    }
+
+    public fromHex(signature: Hex) {
+        let bytes = signature.toByteArray();
+        if (bytes.length !== 65) {
+            throw new Error('Invalid_Signature');
+        }
+
+        this.r = new Hex(bytes.slice(0, 32)).toString();
+        this.s = new Hex(bytes.slice(32, 64)).toString();
+
+        this.v = bytes[64];
+        if (this.v !== 27 && this.v !== 28) {
+            this.v = 27 + (this.v % 2);
+        }
+
+        this.recoveryParam = this.v - 27;
+        return this;
+    }
+
+    private concat(objects: Array<string>): Uint8Array {
+        let arrays = [];
+        let length = 0;
+        for (let i = 0; i < objects.length; i++) {
+            let object = new Hex(objects[i]).toByteArray();
+            arrays.push(object);
+            length += object.length;
+        }
+
+        let result = new Uint8Array(length);
+        let offset = 0;
+        for (let i = 0; i < arrays.length; i++) {
+            result.set(arrays[i], offset);
+            offset += arrays[i].length;
+        }
+
+        return result;
+    }
+
+    public toSigString(): string {
+        let final = this.concat([
+            this.r,
+            this.s,
+            (this.recoveryParam ? '0x1c' : '0x1b')
+        ]);
+        return final.toString();
+    }
+
+    public verify(digest: Hex) {
+        let rs = { r: new Hex(this.r).toByteArray(), s: new Hex(this.s).toByteArray() };
+        let pub = '0x' + this._curve.recoverPubKey(digest.toByteArray(), rs, this.recoveryParam).encode('hex', false);
+        let pubKey = "0x" + this._curve.keyFromPublic(new Hex(pub).toByteArray()).getPublic(false, 'hex');
+    }
+
+    private recoverAddress(pubKey: Hex) {
+
+    }
+
+    private recoverPubkey(digest: Hex) {
+        let rs = { r: new Hex(this.r).toByteArray(), s: new Hex(this.s).toByteArray() };
+        return '0x' + this._curve.recoverPubKey(digest.toByteArray(), rs, this.recoveryParam).encode('hex', false);
+    }
+}
+
+export class ECKey {
     private _private: PrivateKey;
     private _public: PublicKey;
     private _address: Address;
@@ -137,71 +234,28 @@ export class KeyPair {
     toAddress() {
         return this._address.toString();
     }
-}
 
-export class Secp256k1 {
-    private _curve = new EC('secp256k1');
-    private _keyPair = new KeyPair();
+    sign(message: string) {
+        if (!this._private) {
+            throw new Error("invalid_private_key");
+        }
 
-    constructor(privKey: string) {
-
+        let digest = new Hex(message);
+        let signature = this._private.sign(digest);
+        return new ECSignature().fromSig(signature);
     }
 
-    doRandom() {
-
-    }
-
-    generateKeyPair() {
-        let pair = ecc.ecdsa.generateKeys(ecc.curves.k256);
-        let sec = pair.sec.serialize();
-        let pub = pair.pub.serialize();
-        return new KeyPair(sec["exponent"], pub["point"]);
-    }
-
-    restore(privKey: string) {
-
-    }
-
-    restorePubkeyOnly() {
-
-    }
-
-    unserializePublicKey(pubKey: string) {
-        const publicKey = ecc.ecdsa.publicKey;
-        let pub = new publicKey(
-            sjcl.ecc.curves.k256,
-            sjcl.codec.hex.toBits(pubKey)
-        );
-
-        return pub;
-    }
-
-    unserializePrivKey(privKey: string) {
-        let priv = new sjcl.ecc.ecdsa.secretKey(
-            sjcl.ecc.curves.k256,
-            sjcl.ecc.curves.k256.field.fromBits(sjcl.codec.hex.toBits(privKey))
-        );
-
-        return priv;
+    verify(message: string, signature: string) {
+        let sig = new ECSignature().fromHex(new Hex(signature));
+        return sig.verify(new Hex(message));
     }
 
     encrypt(message: string, pubKey: string) {
-        return sjcl.encrypt(pubKey, message) as string;
+        let pub = new PublicKey(pubKey).unserialize();
+        return encrypt(pubKey, message);
     }
 
     decrypt(message: string, privKey: string) {
-        return sjcl.decrypt(privKey, message) as string;
-    }
-
-    sign(message: string, privKey: string) {
-        let hash = sjcl.hash.sha256.hash(message);
-        let priv = this.unserializePrivKey(privKey);
-        return sjcl.codec.hex.fromBits(priv.sign(hash)) as string;
-    }
-
-    verify(message: string, pubKey: string, signature: string) {
-        let hash = sjcl.hash.sha256.hash(message);
-        let pub = this.unserializePublicKey(pubKey);
-        return pub.verify(hash, sjcl.codec.hex.toBits(signature)) as boolean;
+        return decrypt(privKey, message) as string;
     }
 }

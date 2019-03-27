@@ -55,4 +55,21 @@ export class Hex {
         let raw = '0x' + result.join('');
         return this.assert(raw, length);
     }
+
+    public hexZeroPad(length: number): string {
+        let final = this._value;
+        while (final.length < 2 * length + 2) {
+            final = '0x0' + final.substring(2);
+        }
+        return final;
+    }
+
+    public hexStripZeros(): string {
+        let final = this._value;
+        while (final.length > 3 && final.substring(0, 3) === '0x0') {
+            final = '0x' + final.substring(3);
+        }
+
+        return final;
+    }
 }
