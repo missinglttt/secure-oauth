@@ -1,4 +1,5 @@
 import * as _ from 'lodash';
+import { stringToByteArray } from './bytes';
 
 export class Hex {
     protected _value: string;
@@ -32,13 +33,7 @@ export class Hex {
     public toByteArray(): Uint8Array {
         let value = this._value.substring(2);
         if (value.length % 2) { value = '0' + value; }
-
-        let result = [];
-        for (var i = 0; i < value.length; i += 2) {
-            result.push(parseInt(value.substr(i, 2), 16));
-        }
-
-        return new Uint8Array(result);
+        return stringToByteArray(value);
     }
 
     public toString() {
