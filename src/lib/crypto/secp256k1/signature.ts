@@ -1,9 +1,8 @@
 import { Point } from "./point";
 import { Signature } from "elliptic";
 import { Hex } from "../../types/hex";
-import { stringToByteArray } from "../../types/bytes";
-import { Keccak256 } from "../hash/keccak256";
-import { PublicKey } from "./public_key";
+import { concat, bufferToHex } from "../../types/bytes";
+import { verifyMessage } from "ethers/utils";
 
 export class ECSignature extends Point {
     r: string;
@@ -20,6 +19,7 @@ export class ECSignature extends Point {
         this.r = new Hex('0x' + signature.r.toString(16)).hexZeroPad(32);
         this.s = new Hex('0x' + signature.s.toString(16)).hexZeroPad(32);
         this.v = 27 + signature.recoveryParam;
+        return this;
     }
 
     public fromHex(signature: Hex) {
@@ -40,45 +40,18 @@ export class ECSignature extends Point {
         return this;
     }
 
-    private concat(objects: Array<string>): Uint8Array {
-        let arrays = [];
-        let length = 0;
-        for (let i = 0; i < objects.length; i++) {
-            let object = new Hex(objects[i]).toByteArray();
-            arrays.push(object);
-            length += object.length;
-        }
-
-        let result = new Uint8Array(length);
-        let offset = 0;
-        for (let i = 0; i < arrays.length; i++) {
-            result.set(arrays[i], offset);
-            offset += arrays[i].length;
-        }
-
-        return result;
-    }
-
     public toSigString(): string {
-        let final = this.concat([
-            this.r,
-            this.s,
-            (this.recoveryParam ? '0x1c' : '0x1b')
+        let final = concat([
+            new Hex(this.r).toByteArray(),
+            new Hex(this.s).toByteArray(),
+            new Hex((this.recoveryParam ? '0x1c' : '0x1b')).toByteArray()
         ]);
-        return final.toString();
+
+        return bufferToHex(final);
     }
 
-    public verifyWithPubKey(message: string, signature: string, pubKey: string): boolean {
-        this.fromHex(new Hex(signature));
-        let rs = { r: stringToByteArray(this.r), s: stringToByteArray(this.s) };
-        let messagePubKey = '0x' + this._curve.recoverPubKey(stringToByteArray(Keccak256.hashMessage(message)), rs, this.recoveryParam).encode('hex', false);
-        return messagePubKey === pubKey;
-    }
-
-    public verifyWithAddress(message: string, signature: string, address: string): boolean {
-        this.fromHex(new Hex(signature));
-        let rs = { r: stringToByteArray(this.r), s: stringToByteArray(this.s) };
-        let messagePubKey = '0x' + this._curve.recoverPubKey(stringToByteArray(Keccak256.hashMessage(message)), rs, this.recoveryParam).encode('hex', false);
-        return new PublicKey(messagePubKey).getAddress().toString() === address;
+    public verify(message: string, signature: string, address: string): boolean {
+        let pubKey = verifyMessage(message, signature);
+        return address === pubKey;
     }
 }

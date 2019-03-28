@@ -1,8 +1,10 @@
 import { Point } from './point';
-import { Hex } from '../../types/hex';
 import { PRIVAKEY_LENGTH } from './enum';
-import { PublicKey } from './public_key';
 import _ from 'lodash';
+import { Keccak256 } from '../hash/keccak256';
+import { stringToByteArray } from '../../types/bytes';
+import { ECSignature } from './signature';
+import { computeAddress } from 'ethers/utils';
 
 export class PrivateKey extends Point {
     constructor(value: string | Uint8Array) {
@@ -12,16 +14,17 @@ export class PrivateKey extends Point {
 
         super(value, PRIVAKEY_LENGTH);
     }
-
-    getPublicKey(compressed: boolean = false): PublicKey {
-        let pair = this._curve.keyFromPrivate(this._value);
-        return new PublicKey(pair.getPublic(compressed, 'hex'));
+    toAddress() {
+        return computeAddress(this._value);
     }
 
-    sign(message: Hex) {
-        let pair = this._curve.keyFromPrivate(this._value);
-        return pair.sign(message.toByteArray(), {
+    sign(message: string) {
+        let pair = this._curve.keyFromPrivate(stringToByteArray(this._value));
+        let hashed = Keccak256.hashMessage(message);
+        let sig = pair.sign(stringToByteArray(hashed), {
             canonical: true
-        })
+        });
+
+        return new ECSignature().fromSig(sig);
     }
 }

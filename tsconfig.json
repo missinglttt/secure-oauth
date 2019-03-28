@@ -12,14 +12,15 @@
             "*": [
                 "node_modules/*",
                 "src/types/*"
-            ]
-        }
+            ],
+            "elliptic": ["typings/elliptic"]
+        },
+        "typeRoots": ["./node_modules/@types", "./typings"]
     },
     "include": [
         "src/**/*",
-        "./*", "types/*.d.ts"
+        "./*",
+        "typings/elliptic/*"
     ],
-    "exclude": [
-        "test/**/*"
-    ]
+    "exclude": []
 }

@@ -1,3 +1,5 @@
+const HEX_CHARACTERS: string = '0123456789abcdef';
+
 export function stringToByteArray(value: string) {
     let result = [];
     for (let i = 0; i < value.length; i += 2) {
@@ -28,4 +30,14 @@ export function concat(objects: Array<ArrayLike<number>>): Uint8Array {
     }
 
     return result;
+}
+
+export function bufferToHex(value: ArrayLike<number>) {
+    let result = [];
+    for (let i = 0; i < value.length; i++) {
+        let v = value[i];
+        result.push(HEX_CHARACTERS[(v & 0xf0) >> 4] + HEX_CHARACTERS[v & 0x0f]);
+    }
+
+    return '0x' + result.join('');
 }
