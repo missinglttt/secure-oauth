@@ -1,5 +1,4 @@
 import { BaseLogger, WINSTON_LOG_LEVEL } from './base_logger';
-import * as path from 'path';
 import * as mkdirp from 'mkdirp';
 import * as fs from 'fs';
 

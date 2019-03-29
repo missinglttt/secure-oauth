@@ -4,7 +4,8 @@ import _ from 'lodash';
 import { Keccak256 } from '../hash/keccak256';
 import { stringToByteArray } from '../../types/bytes';
 import { ECSignature } from './signature';
-import { toAddress } from './ether_wrapper';
+import { toAddress, getPublicKey } from './ether_wrapper';
+import { Hex } from '../../types/hex';
 
 export class PrivateKey extends Point {
     constructor(value: string | Uint8Array) {
@@ -17,6 +18,12 @@ export class PrivateKey extends Point {
 
     toAddress() {
         return toAddress(this._value);
+    }
+
+    toSharedKey(theirPubKey: string) {
+        let key = this.curves().keyFromPrivate(stringToByteArray(this._value));
+        let pubKey = this.curves().keyFromPublic(stringToByteArray(getPublicKey(theirPubKey)));
+        return new Hex('0x' + key.derive(pubKey.getPublic()).toString(16)).hexZeroPad(32);
     }
 
     sign(message: string) {

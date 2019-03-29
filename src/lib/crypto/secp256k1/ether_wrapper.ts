@@ -1,4 +1,4 @@
-import { verifyMessage, computeAddress, Wordlist, HDNode } from 'ethers/utils';
+import { verifyMessage, computeAddress, Wordlist, HDNode, SigningKey, computePublicKey } from 'ethers/utils';
 import { ec as EC } from 'elliptic';
 
 export function verify(message: string, signature: string) {
@@ -11,6 +11,10 @@ export function toAddress(privKey: string) {
 
 export function fromMnemonic(mnemonic: string, passphrase: string, locale?: Wordlist) {
     return HDNode.fromMnemonic(mnemonic, locale, passphrase);
+}
+
+export function getPublicKey(key: string) {
+    return computePublicKey(key);
 }
 
 export function getCurves(name: string) {

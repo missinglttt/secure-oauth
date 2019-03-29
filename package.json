@@ -36,6 +36,8 @@
     "morgan": "^1.9.1",
     "request": "^2.88.0",
     "sjcl": "^1.0.8",
+    "tweetnacl": "^1.0.1",
+    "tweetnacl-util": "^0.15.0",
     "uuid": "^3.3.2",
     "winston": "^3.2.1",
     "winston-daily-rotate-file": "^3.8.0"

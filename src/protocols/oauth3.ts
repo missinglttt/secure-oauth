@@ -4,7 +4,7 @@
  */
 const EventEmitter = require("events");
 
-class HandShakeProtocol extends EventEmitter {
+class OAuth3 extends EventEmitter {
     constructor() {
         super();
     }
