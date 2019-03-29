@@ -4,8 +4,8 @@ import { randomBytes } from "crypto";
 import _ from "lodash";
 import { ECSignature } from "./signature";
 import { Hex } from "../../types/hex";
-import { HDNode, Wordlist, } from 'ethers/utils';
 import bip39 from 'bip39';
+import { fromMnemonic } from "./ether_wrapper";
 
 export class ECKey {
     private _private: PrivateKey;
@@ -33,8 +33,8 @@ export class ECKey {
         this._address = new Address(this._private.toAddress());
     }
 
-    protected fromMnemonic(mnemonic: string, passphrase?: string, locale?: Wordlist) {
-        let node = HDNode.fromMnemonic(mnemonic, locale, passphrase);
+    protected fromMnemonic(mnemonic: string, passphrase?: string) {
+        let node = fromMnemonic(mnemonic, passphrase);
         this._mnemonic = node.mnemonic;
         this._private = new PrivateKey(node.privateKey);
         this._address = new Address(this._private.toAddress());

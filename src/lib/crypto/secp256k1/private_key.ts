@@ -4,7 +4,7 @@ import _ from 'lodash';
 import { Keccak256 } from '../hash/keccak256';
 import { stringToByteArray } from '../../types/bytes';
 import { ECSignature } from './signature';
-import { computeAddress } from 'ethers/utils';
+import { toAddress } from './ether_wrapper';
 
 export class PrivateKey extends Point {
     constructor(value: string | Uint8Array) {
@@ -14,12 +14,13 @@ export class PrivateKey extends Point {
 
         super(value, PRIVAKEY_LENGTH);
     }
+
     toAddress() {
-        return computeAddress(this._value);
+        return toAddress(this._value);
     }
 
     sign(message: string) {
-        let pair = this._curve.keyFromPrivate(stringToByteArray(this._value));
+        let pair = this.curves().keyFromPrivate(stringToByteArray(this._value));
         let hashed = Keccak256.hashMessage(message);
         let sig = pair.sign(stringToByteArray(hashed), {
             canonical: true

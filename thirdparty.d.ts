@@ -52,7 +52,7 @@ declare module "bn.js" {
     }
 }
 
-declare module "elliptic" {
+/*declare module "elliptic" {
     import { BN } from "bn.js";
     export type BasicSignature = {
         r: Uint8Array;
@@ -92,7 +92,7 @@ declare module "elliptic" {
 
         //        curve: Curve;
     }
-}
+}*/
 
 declare module "hash.js" {
     export interface HashFunc {

@@ -20,7 +20,7 @@
     "include": [
         "src/**/*",
         "./*",
-        "typings/elliptic/*"
+        "typings/**/*"
     ],
-    "exclude": []
+    "exclude": ["typings/elliptic/*"]
 }

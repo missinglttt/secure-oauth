@@ -2,7 +2,7 @@ import { Point } from "./point";
 import { Signature } from "elliptic";
 import { Hex } from "../../types/hex";
 import { concat, bufferToHex } from "../../types/bytes";
-import { verifyMessage } from "ethers/utils";
+import { verify } from "./ether_wrapper";
 
 export class ECSignature extends Point {
     r: string;
@@ -51,7 +51,6 @@ export class ECSignature extends Point {
     }
 
     public verify(message: string, signature: string, address: string): boolean {
-        let pubKey = verifyMessage(message, signature);
-        return address === pubKey;
+        return verify(message, signature) === address;
     }
 }

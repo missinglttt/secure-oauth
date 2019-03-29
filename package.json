@@ -20,7 +20,6 @@
   },
   "homepage": "https://github.com/missinglttt/secure-oauth#readme",
   "dependencies": {
-    "@types/hashtable": "^3.0.28",
     "bip39": "^2.5.0",
     "bitcoinjs-message": "^2.0.0",
     "bn.js": "^4.11.8",
