@@ -4,7 +4,7 @@ import _ from 'lodash';
 import { Keccak256 } from '../hash/keccak256';
 import { stringToByteArray } from '../../types/bytes';
 import { ECSignature } from './signature';
-import { toAddress, getPublicKey } from './ether_wrapper';
+import { toAddress, getPublicKey } from './wrapper';
 import { Hex } from '../../types/hex';
 
 export class PrivateKey extends Point {

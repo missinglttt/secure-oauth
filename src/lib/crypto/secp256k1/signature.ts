@@ -2,7 +2,7 @@ import { Point } from "./point";
 import { Signature } from "elliptic";
 import { Hex } from "../../types/hex";
 import { concat, bufferToHex } from "../../types/bytes";
-import { verify } from "./ether_wrapper";
+import { verify } from "./wrapper";
 
 export class ECSignature extends Point {
     r: string;

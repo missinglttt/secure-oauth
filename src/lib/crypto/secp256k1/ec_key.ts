@@ -5,18 +5,16 @@ import _ from "lodash";
 import { ECSignature } from "./signature";
 import { Hex } from "../../types/hex";
 import bip39 from 'bip39';
-import { fromMnemonic } from "./ether_wrapper";
+import { fromMnemonic } from "./wrapper";
 
 export class ECKey {
     private _private: PrivateKey;
     private _address: Address;
     private _mnemonic: string;
 
-    constructor(privKey: string = "", pubKey: string = "") {
+    constructor(privKey: string = "") {
         if (!_.isEmpty(privKey)) {
             this.fromPrivateKey(privKey);
-        } else if (!_.isEmpty(pubKey)) {
-            this.fromPublicKey(pubKey);
         } else {
             let mnemonic = bip39.entropyToMnemonic(randomBytes(16));
             this.fromMnemonic(mnemonic);
@@ -25,11 +23,6 @@ export class ECKey {
 
     protected fromPrivateKey(privKey: string) {
         this._private = new PrivateKey(privKey);
-        this._address = new Address(this._private.toAddress());
-    }
-
-    protected fromPublicKey(pubKey: string) {
-        this._private = null;
         this._address = new Address(this._private.toAddress());
     }
 

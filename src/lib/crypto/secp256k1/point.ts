@@ -1,5 +1,5 @@
 import { Hex } from '../../types/hex';
-import { getCurves } from './ether_wrapper';
+import { getCurves } from './wrapper';
 
 export class Point extends Hex {
     constructor(value?: string | Uint8Array, length?: number) {

@@ -4,7 +4,7 @@ import { Hex } from '../../types/hex';
 import { bufferToHex } from '../../types/bytes';
 
 export function encrypt(data: string, theirPublicKey: Hex, mySecretKey: Hex) {
-    const nonce = tweetnacl.randomBytes(tweetnacl.box.nonceLength)
+    let nonce = tweetnacl.randomBytes(tweetnacl.box.nonceLength)
     let encryptor = tweetnacl.box(toUtf8Bytes(data),
         nonce,
         theirPublicKey.toByteArray(),
