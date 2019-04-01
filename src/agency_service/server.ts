@@ -24,8 +24,8 @@ export class AgencyServer extends BaseServer {
         try {
             let request = this.doCast<any, OAuthRequestModel>(req);
             let response = await this._dp.instanceOf<IOAuthService>("IOAuthService")
-                .doHandshake(request.data);
-            this.doSend(res, 200, response);
+                .shareKey(request.data);
+            this.doSend(res, response);
         } catch (err) {
             next(err);
         }

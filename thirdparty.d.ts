@@ -97,4 +97,3 @@ declare module "xmlhttprequest" {
         onerror: (error: Error) => void;
     }
 }
-

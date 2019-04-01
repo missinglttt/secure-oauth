@@ -4,6 +4,7 @@ import { EventEmitter } from 'events';
 import { NotFoundError, InternalServerError } from './error';
 import { INVALID_RESPONSE_CHANNEL } from './error_messages';
 import { HttpRequestModel } from '.';
+import { BaseResponse } from "./base_response_model";
 
 export class BaseServer extends EventEmitter {
     protected _router: express.Router = express.Router();
@@ -116,12 +117,12 @@ export class BaseServer extends EventEmitter {
     /**
      * Send response to cliend
      */
-    doSend<T>(res: express.Response, status: number, body: T) {
+    doSend(res: express.Response, body: BaseResponse) {
         if (!res) {
             throw new Error(INVALID_RESPONSE_CHANNEL);
         }
 
-        res.status(status)
-            .send(body);
+        res.status(body.status_code)
+            .send(body.toJson());
     }
 }

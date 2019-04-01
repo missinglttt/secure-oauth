@@ -13,14 +13,15 @@
                 "node_modules/*",
                 "src/types/*"
             ],
-            "elliptic": ["typings/elliptic"]
+            "elliptic": ["typings/elliptic"],
+            "hashtable": ["typings/hashtable"]
         },
         "typeRoots": ["./node_modules/@types", "./typings"]
     },
     "include": [
         "src/**/*",
         "./*",
-        "typings/**/*"
+        "./typings/**/*"
     ],
     "exclude": ["typings/elliptic/*"]
 }
