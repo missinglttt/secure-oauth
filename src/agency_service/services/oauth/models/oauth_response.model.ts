@@ -1,4 +1,4 @@
-import { BaseResponse } from "../../../../common/server";
+import { BaseResponse } from "../../../../lib/server";
 
 export class BaseOAuthResponse extends BaseResponse {
     success: boolean;
