@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 import { EventEmitter } from 'events';
 
 export class Connection {
@@ -18,6 +18,9 @@ export interface IDatabaseStore extends EventEmitter {
     getInfo(): Connection;
     isConnected(): boolean;
     disconnect(): void;
+    model(name: string, schema?: mongoose.Schema, collection?: string): mongoose.Model<mongoose.Document, {}>;
+    modelNames(): string[];
+    randomId(): mongoose.Types.ObjectId;
 }
 
 export class DatabaseStore extends EventEmitter implements IDatabaseStore {
@@ -76,6 +79,19 @@ export class DatabaseStore extends EventEmitter implements IDatabaseStore {
         return this._connectionInfo;
     }
 
+    model(name: string, schema?: mongoose.Schema, collection?: string): mongoose.Model<mongoose.Document> {
+        return mongoose.model<mongoose.Document>(name, schema, collection);
+    }
+
+    modelNames() {
+        return mongoose.modelNames();
+    }
+
+    randomId() {
+        let id = new mongoose.Types.ObjectId();
+        return id;
+    }
+
     private listenOnConnectionEvent(conn: typeof mongoose) {
         conn.connection.on("connecting", this.onConnecting.bind(this));
         conn.connection.on("connected", this.onConnected.bind(this));
@@ -114,4 +130,13 @@ export class DatabaseStore extends EventEmitter implements IDatabaseStore {
         this._connectionUpdateTime = Date.now();
         this.emit("disconnected", this._conn, this._connectionUpdateTime);
     }
+}
+
+var instance: DatabaseStore;
+export function createStore() {
+    if (!instance) {
+        instance = new DatabaseStore();
+    }
+
+    return instance;
 }

@@ -13,7 +13,7 @@ export class OAuthService implements IOAuthService {
 
     }
 
-    async shareKey(params: OAuthRequestModel) {
+    async shareKey() {
         let key = this._oauth.createKey();
         let res = new ShareKeyModel(true, key.toAddress());
         return res;
