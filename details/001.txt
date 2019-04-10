@@ -1,0 +1,15 @@
+Protocol 001: Client authenticate with a service
+
+c = client
+a = agency service
+m = merchant
+
+c: authenticate, {"client_pub_key", "service_pub_key", "service_unique_id"}
+a: OK, {"service_name", "service_directory", "license"}
+c: confirm, {"license", "signature", "time_stamp"}
+a: user, {"client_pub_key", "service_pub_key", "service_unique_id"}
+s: OK, {"permission_list"}
+a: Permission_required, {"permission_list"}
+c: approve, {"permission_encrypt", "service_unique_id"}
+a: forward, {"permission_encrypt", "service_unique_id"}
+s: OK, login success, use "service_unique_id" as token

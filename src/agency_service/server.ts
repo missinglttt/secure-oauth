@@ -1,41 +1,26 @@
 import { BaseServer } from '../lib/server';
-import { Request, Response, NextFunction } from 'express';
-import { IOAuthService } from './services';
-import { OAuthRequestModel } from './services/oauth';
-import { IDenpendencyProvider } from '../lib';
+import { Request, Response, NextFunction, Router } from 'express';
+import { OAuthRequestModel, OAuthService } from './services/oauth';
 
 export class AgencyServer extends BaseServer {
-    private _dp: IDenpendencyProvider;
+    private readonly _oauthService = new OAuthService();
 
-    constructor(provider: IDenpendencyProvider) {
+    constructor() {
         super();
-        this._dp = provider;
     }
 
     route() {
-        this.post("/access", this.onAccess.bind(this));
-        this.post("/oauth", this.onOAuth.bind(this));
+        this.post("/authenticate", this.onAuthenticate.bind(this));
     };
 
     run(port: number) {
         this.listen(port);
     }
 
-    async onAccess(req: Request, res: Response, next: NextFunction) {
+    async onAuthenticate(req: Request, res: Response, next: NextFunction) {
         try {
             let request = this.doCast<any, OAuthRequestModel>(req);
-            let response = await this._dp.instanceOf<IOAuthService>("IOAuthService")
-                .shareKey(request.data);
-            this.doSend(res, response);
-        } catch (err) {
-            next(err);
-        }
-    }
-
-    async onOAuth(req: Request, res: Response, next: NextFunction) {
-        try {
-            let request = this.doCast<any, OAuthRequestModel>(req);
-            let response = await this._dp.instanceOf<IOAuthService>("IOAuthService")
+            let response = await this._oauthService
                 .authenticate(request.data);
 
             this.doSend(res, response);

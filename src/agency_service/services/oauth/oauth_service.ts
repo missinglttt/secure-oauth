@@ -1,25 +1,29 @@
-import { OAuthRequestModel } from "./models/oauth.model";
-import { OAuth3 } from '../../../protocols/oauth3';
-import { BaseOAuthResponse, ShareKeyModel } from "./models/oauth_response.model";
+import { OAuthRequestModel, AuthenticationResponse } from "./models/oauth.model";
+import { BaseOAuthResponse } from "./models/oauth.model";
+import { DnsResolver } from "./dns_query";
+import { AgencyServiceProvider, ProviderKeys } from '../../provider';
 
 export interface IOAuthService {
-    authenticate(params: OAuthRequestModel): Promise<BaseOAuthResponse>;
-    shareKey(params: OAuthRequestModel): Promise<ShareKeyModel>;
+    authenticate(params: OAuthRequestModel): Promise<BaseOAuthResponse<AuthenticationResponse>>;
 }
 
 export class OAuthService implements IOAuthService {
-    private _oauth = new OAuth3();
+    private _dnsResolver: DnsResolver;
     constructor() {
-
-    }
-
-    async shareKey() {
-        let key = this._oauth.createKey();
-        let res = new ShareKeyModel(true, key.toAddress());
-        return res;
+        this._dnsResolver = AgencyServiceProvider.instanceOf(ProviderKeys.DnsResolver);
     }
 
     async authenticate(params: OAuthRequestModel) {
-        return new BaseOAuthResponse();
+        let dnsRecord = await this._dnsResolver.resolve(params.service_pub_key);
+        let result = new BaseOAuthResponse<AuthenticationResponse>();
+
+        result.data = {
+            service_name: dnsRecord.name,
+            service_directory: dnsRecord.endpoint,
+            license: "contract_address"
+        };
+
+        result.message = "OK";
+        return result;
     }
 }

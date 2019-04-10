@@ -1,11 +1,16 @@
 import { DependencyProvider } from '../lib';
-import { IOAuthService, OAuthService } from './services/oauth';
+import { DnsResolver } from './services/oauth/dns_query';
+
+export enum ProviderKeys {
+    DnsResolver
+}
+
+const PROVIDER: DependencyProvider = new DependencyProvider();
+PROVIDER.register<DnsResolver>(ProviderKeys.DnsResolver.toString(), new DnsResolver());
 
 export class AgencyServiceProvider {
-    static createProvider() {
-        let provider = new DependencyProvider();
-        provider.register<IOAuthService>("IOAuthService", new OAuthService());
-
-        return provider;
+    static instanceOf<T>(key: ProviderKeys): T {
+        return PROVIDER.instanceOf(key.toString()) as T;
     }
 }
+
